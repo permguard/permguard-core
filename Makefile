@@ -19,6 +19,7 @@ init-dependency:
 	go get -u github.com/davecgh/go-spew
 	go get -u github.com/jinzhu/copier
 	go get -u github.com/google/uuid
+	go get -u github.com/pelletier/go-toml"
 	go get -u github.com/go-playground/validator/v10
 	go get -u github.com/stretchr/testify
 
