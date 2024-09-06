@@ -71,7 +71,7 @@ func ValidateSimpleName(name string) bool {
 
 
 // ValidateAccountID validates an account ID.
-func ValidateAccountID(entity string, accountID int64) bool {
+func ValidateAccountID(accountID int64) bool {
 	vAccountID := struct {
 		AccountID int64 `validate:"required,gt=0"`
 	}{AccountID: accountID}
