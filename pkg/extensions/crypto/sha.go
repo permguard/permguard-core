@@ -17,23 +17,9 @@
 package crypto
 
 import (
-	"crypto/sha1"
 	"crypto/sha256"
 	"encoding/hex"
 )
-
-// ComputeSHA1 computes the SHA1 hash of the given data.
-func ComputeSHA1(data []byte) string {
-	hasher := sha1.New()
-	hasher.Write(data)
-	hashBytes := hasher.Sum(nil)
-	return hex.EncodeToString(hashBytes)
-}
-
-// ComputeStringSHA1 computes the SHA1 hash of the given string.
-func ComputeStringSHA1(data string) string {
-	return ComputeSHA1([]byte(data))
-}
 
 // ComputeSHA256 computes the SHA1 hash of the given data.
 func ComputeSHA256(data []byte) string {
