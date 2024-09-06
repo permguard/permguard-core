@@ -21,8 +21,8 @@ import (
 )
 
 // ConvertStructToMap converts a struct to a map.
-func ConvertStructToMap(obj interface{}) (map[string]interface{}, error) {
-	var data map[string]interface{}
+func ConvertStructToMap(obj any) (map[string]any, error) {
+	var data map[string]any
 	jsonBytes, err := json.Marshal(obj)
 	if err != nil {
 		return nil, err
@@ -35,7 +35,7 @@ func ConvertStructToMap(obj interface{}) (map[string]interface{}, error) {
 }
 
 // ConvertMapToStruct converts a map to a struct.
-func ConvertMapToStruct(obj map[string]interface{}, target interface{}) error {
+func ConvertMapToStruct(obj map[string]any, target any) error {
 	jsonBytes, err := json.Marshal(obj)
 	if err != nil {
 		return err

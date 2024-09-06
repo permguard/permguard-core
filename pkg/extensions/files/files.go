@@ -109,7 +109,7 @@ func AppendToFile(name string, data []byte) (bool, error) {
 }
 
 // ReadTOMLFile reads a TOML file.
-func ReadTOMLFile(name string, v interface{}) error {
+func ReadTOMLFile(name string, v any) error {
 	file, err := os.Open(name)
 	if err != nil {
 		return errors.New("core: failed to open file")
