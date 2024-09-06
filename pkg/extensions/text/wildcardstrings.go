@@ -78,7 +78,7 @@ func (a WildcardString) WildcardInclude(value string) bool {
 	vSanitizedMatch := WildcardString(value).wildcardMatch(aStr, false)
 	if strings.ReplaceAll(aStr, wildcardChar, "") == strings.ReplaceAll(value, wildcardChar, "") {
 		greater := strings.Count(aStr, wildcardChar) > strings.Count(value, wildcardChar)
-		return greater && aSanitizedMatch && vSanitizedMatch
+		return greater && aSanitizedMatch
 	}
 	return aSanitizedMatch && !vSanitizedMatch
 }
