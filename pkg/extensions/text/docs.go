@@ -14,5 +14,5 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-// Package text implement the host text.
+// Package text implements the host text.
 package text

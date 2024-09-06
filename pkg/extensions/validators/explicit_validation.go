@@ -16,6 +16,11 @@
 
 package validators
 
+import (
+	"fmt"
+	"strings"
+)
+
 // IsValidPath checks if the given path is valid.
 func IsValidPath(path string) bool {
 	vDirPath := struct {
@@ -62,4 +67,79 @@ func ValidateSimpleName(name string) bool {
 	}{Name: name}
 	isValid, err := ValidateInstance(vName)
 	return isValid && err == nil
+}
+
+
+// ValidateAccountID validates an account ID.
+func ValidateAccountID(entity string, accountID int64) bool {
+	vAccountID := struct {
+		AccountID int64 `validate:"required,gt=0"`
+	}{AccountID: accountID}
+	if isValid, err := ValidateInstance(vAccountID); err != nil || !isValid {
+		return false
+	}
+	min := int64(100000000000)
+	max := int64(999999999999)
+	if accountID < min || accountID > max {
+		return false
+	}
+	return true
+}
+
+// formatAsUUID formats a string as a UUID.
+func formatAsUUID(s string) string {
+	if strings.Contains(s, "-") || strings.Contains(s, " ") || len(s) != 32 {
+		return s
+	}
+	return fmt.Sprintf("%s-%s-%s-%s-%s",
+		s[0:8],
+		s[8:12],
+		s[12:16],
+		s[16:20],
+		s[20:32],
+	)
+}
+
+// ValidateUUID validates a UUID.
+func ValidateUUID(id string) bool {
+	formattedID := formatAsUUID(id)
+	vID := struct {
+		ID string `validate:"required,uuid4"`
+	}{ID: formattedID}
+	if isValid, err := ValidateInstance(vID); err != nil || !isValid {
+		return false
+	}
+	return true
+}
+
+// ValidateIdentityUserName validates the identity name specifically for user-type identities.
+func ValidateIdentityUserName(name string) bool {
+	if ValidateName(name) {
+		return true
+	}
+	vEmail := struct {
+		Email string `validate:"required,email"`
+	}{Email: name}
+	if isValid, err := ValidateInstance(vEmail); err != nil || !isValid {
+		return false
+	}
+	return true
+}
+
+// ValidateName validates a name.
+func ValidateName(name string) bool {
+	sanitized := strings.ToLower(strings.TrimSpace(name))
+	if strings.HasPrefix(name, "permguard") {
+		return false
+	}
+	if name != sanitized {
+		return false
+	}
+	vName := struct {
+		Name string `validate:"required,name"`
+	}{Name: name}
+	if isValid, err :=  ValidateInstance(vName); err != nil || !isValid {
+		return false
+	}
+	return false
 }

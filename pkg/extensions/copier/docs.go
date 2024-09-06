@@ -14,5 +14,5 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-// Package copier implement the helper to copy instances.
+// Package copier implements the helper to copy instances.
 package copier
