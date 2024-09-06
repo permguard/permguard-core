@@ -141,5 +141,5 @@ func ValidateName(name string) bool {
 	if isValid, err :=  ValidateInstance(vName); err != nil || !isValid {
 		return false
 	}
-	return false
+	return true
 }
