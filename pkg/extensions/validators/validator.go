@@ -37,6 +37,14 @@ func isName(fl validator.FieldLevel) bool {
 	return regex.MatchString(fl.Field().String())
 }
 
+// isWildcardName is a custom validator for wilcard name.
+func isWildcardName(fl validator.FieldLevel) bool {
+	pattern := `^[a-z0-9\*][a-z0-9\-\._\*]*[a-z0-9\*]$`
+	regex := regexp.MustCompile(pattern)
+	return regex.MatchString(fl.Field().String())
+}
+
+
 // isUUID is a custom validator for UUID.
 func isUUID(fl validator.FieldLevel) bool {
 	_, err := uuid.Parse(fl.Field().String())
@@ -52,6 +60,7 @@ func ValidateInstance(s any) (bool, error) {
 	validate.RegisterValidation("isuuid", isUUID)
 	validate.RegisterValidation("simplename", isSimpleName)
 	validate.RegisterValidation("name", isName)
+	validate.RegisterValidation("wildcardname", isWildcardName)
 	err := validate.Struct(s)
 	if err != nil {
 		return false, err

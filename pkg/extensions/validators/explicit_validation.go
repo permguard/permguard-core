@@ -143,3 +143,21 @@ func ValidateName(name string) bool {
 	}
 	return true
 }
+
+// ValidateWildcardName validates a wildcard name.
+func ValidateWildcardName(name string) bool {
+	sanitized := strings.ToLower(strings.TrimSpace(name))
+	if strings.HasPrefix(name, "permguard") {
+		return false
+	}
+	if name != sanitized {
+		return false
+	}
+	vName := struct {
+		Name string `validate:"required,wildcardname"`
+	}{Name: name}
+	if isValid, err :=  ValidateInstance(vName); err != nil || !isValid {
+		return false
+	}
+	return true
+}
