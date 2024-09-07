@@ -17,6 +17,7 @@
 package validators
 
 import (
+	"os"
 	"regexp"
 
 	"github.com/go-playground/validator/v10"
@@ -50,6 +51,16 @@ func isUUID(fl validator.FieldLevel) bool {
 	return err == nil
 }
 
+// dirpath is a custom validator for directory path.
+func dirpath(fl validator.FieldLevel) bool {
+	path := fl.Field().String()
+	info, err := os.Stat(path)
+	if os.IsNotExist(err) {
+		return false
+	}
+	return info.IsDir() // ensure the path is a directory
+}
+
 // ValidateInstance validates the input instance.
 func ValidateInstance(s any) (bool, error) {
 	if s == nil {
@@ -60,6 +71,7 @@ func ValidateInstance(s any) (bool, error) {
 	validate.RegisterValidation("simplename", isSimpleName)
 	validate.RegisterValidation("name", isName)
 	validate.RegisterValidation("wildcardname", isWildcardName)
+	validate.RegisterValidation("dirpath", dirpath)
 	err := validate.Struct(s)
 	if err != nil {
 		return false, err
