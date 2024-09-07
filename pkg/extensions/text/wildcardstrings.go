@@ -29,55 +29,67 @@ const wildcardChar = "*"
 type WildcardString string
 
 // convertWildcardStringToRegexp converts a wildcard string to a regular expression pattern.
+// Replaces wildcard '*' with '.*' to match any characters and escapes the other parts.
 func convertWildcardStringToRegexp(wildcardString string) string {
 	var pattern strings.Builder
 	for i, literal := range strings.Split(wildcardString, wildcardChar) {
 		if i > 0 {
-			str := fmt.Sprintf(".%s", wildcardChar)
-			pattern.WriteString(str)
+			pattern.WriteString(".*")
 		}
 		pattern.WriteString(regexp.QuoteMeta(literal))
 	}
 	return pattern.String()
 }
 
-// compactWildcards removes consecutive wildcards from a wildcard string.
-func compactWildcards(wildcardString string) string {
-	return strings.ReplaceAll(wildcardString, fmt.Sprintf("%s%s", wildcardChar, wildcardChar), wildcardChar)
-}
-
 // wildcardMatch checks if a wildcard string matches a value.
 func (a WildcardString) wildcardMatch(value string, sanitized bool) bool {
-	var pattern string
-	aStr := compactWildcards(string(a))
-	valueStr := compactWildcards(value)
-	pattern = convertWildcardStringToRegexp(aStr)
-	sanitizedValue := valueStr
-	pattern = fmt.Sprintf("^%s$", pattern)
-	if sanitized {
-		sanitizedValue = strings.ReplaceAll(valueStr, wildcardChar, "")
-	}
-	result, _ := regexp.MatchString(pattern, sanitizedValue)
-	return result
+    aStr := compactWildcards(string(a))
+    valueStr := compactWildcards(value)
+    pattern := convertWildcardStringToRegexp(aStr)
+    pattern = fmt.Sprintf("^%s$", pattern)
+
+    re, err := regexp.Compile(pattern)
+    if err != nil {
+        return false
+    }
+
+    sanitizedValue := valueStr
+    if sanitized {
+        sanitizedValue = strings.ReplaceAll(valueStr, wildcardChar, "")
+    }
+
+    return re.MatchString(sanitizedValue)
 }
 
-// WildcardEqual checks if a wildcard string is equal to a value.
+// compactWildcards removes consecutive wildcards from a wildcard string.
+// Reduces "**" to "*".
+func compactWildcards(wildcardString string) string {
+    return strings.ReplaceAll(wildcardString, wildcardChar+wildcardChar, wildcardChar)
+}
+
+// WildcardEqual checks if two wildcard strings are equal after compacting wildcards.
+// It ensures that consecutive wildcards in either string are treated as a single wildcard.
 func (a WildcardString) WildcardEqual(value string) bool {
 	aStr := compactWildcards(string(a))
 	valueStr := compactWildcards(value)
 	return aStr == valueStr
 }
 
-// WildcardInclude checks if a wildcard string includes a value.
+// WildcardInclude checks if a wildcard string includes another value.
+// It compares the compacted wildcard strings and performs a detailed match.
 func (a WildcardString) WildcardInclude(value string) bool {
 	aStr := string(a)
+	valueStr := value
+
 	if a.WildcardEqual(value) {
 		return false
 	}
-	aSanitizedMatch := a.wildcardMatch(value, false)
-	vSanitizedMatch := WildcardString(value).wildcardMatch(aStr, false)
-	if strings.ReplaceAll(aStr, wildcardChar, "") == strings.ReplaceAll(value, wildcardChar, "") {
-		greater := strings.Count(aStr, wildcardChar) > strings.Count(value, wildcardChar)
+
+	aSanitizedMatch := a.wildcardMatch(valueStr, false)
+	vSanitizedMatch := WildcardString(valueStr).wildcardMatch(aStr, false)
+
+	if strings.ReplaceAll(aStr, wildcardChar, "") == strings.ReplaceAll(valueStr, wildcardChar, "") {
+		greater := strings.Count(aStr, wildcardChar) > strings.Count(valueStr, wildcardChar)
 		return greater && aSanitizedMatch
 	}
 	return aSanitizedMatch && !vSanitizedMatch
