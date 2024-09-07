@@ -13,6 +13,8 @@
 // limitations under the License.
 //
 // SPDX-License-Identifier: Apache-2.0
+//
+// SPDX-License-Identifier: Apache-2.0
 
 // Package crypto implements cryptographic functions.
 package crypto

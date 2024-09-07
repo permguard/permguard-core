@@ -13,6 +13,8 @@
 // limitations under the License.
 //
 // SPDX-License-Identifier: Apache-2.0
+//
+// SPDX-License-Identifier: Apache-2.0
 
 package validators
 
@@ -47,7 +49,6 @@ func IsValidHostname(hostnamePath string) bool {
 	return isValid && err == nil
 }
 
-
 // IsValidHostnamePort checks if the given hostname port is valid.
 func IsValidHostnamePort(hostnamePath string) bool {
 	if hostnamePath == "" {
@@ -68,7 +69,6 @@ func ValidateSimpleName(name string) bool {
 	isValid, err := ValidateInstance(vName)
 	return isValid && err == nil
 }
-
 
 // ValidateAccountID validates an account ID.
 func ValidateAccountID(accountID int64) bool {
@@ -138,7 +138,7 @@ func ValidateName(name string) bool {
 	vName := struct {
 		Name string `validate:"required,name"`
 	}{Name: name}
-	if isValid, err :=  ValidateInstance(vName); err != nil || !isValid {
+	if isValid, err := ValidateInstance(vName); err != nil || !isValid {
 		return false
 	}
 	return true
@@ -156,7 +156,7 @@ func ValidateWildcardName(name string) bool {
 	vName := struct {
 		Name string `validate:"required,wildcardname"`
 	}{Name: name}
-	if isValid, err :=  ValidateInstance(vName); err != nil || !isValid {
+	if isValid, err := ValidateInstance(vName); err != nil || !isValid {
 		return false
 	}
 	return true

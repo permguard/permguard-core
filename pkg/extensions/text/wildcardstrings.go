@@ -13,6 +13,8 @@
 // limitations under the License.
 //
 // SPDX-License-Identifier: Apache-2.0
+//
+// SPDX-License-Identifier: Apache-2.0
 
 package text
 
@@ -43,28 +45,28 @@ func convertWildcardStringToRegexp(wildcardString string) string {
 
 // wildcardMatch checks if a wildcard string matches a value.
 func (a WildcardString) wildcardMatch(value string, sanitized bool) bool {
-    aStr := compactWildcards(string(a))
-    valueStr := compactWildcards(value)
-    pattern := convertWildcardStringToRegexp(aStr)
-    pattern = fmt.Sprintf("^%s$", pattern)
+	aStr := compactWildcards(string(a))
+	valueStr := compactWildcards(value)
+	pattern := convertWildcardStringToRegexp(aStr)
+	pattern = fmt.Sprintf("^%s$", pattern)
 
-    re, err := regexp.Compile(pattern)
-    if err != nil {
-        return false
-    }
+	re, err := regexp.Compile(pattern)
+	if err != nil {
+		return false
+	}
 
-    sanitizedValue := valueStr
-    if sanitized {
-        sanitizedValue = strings.ReplaceAll(valueStr, wildcardChar, "")
-    }
+	sanitizedValue := valueStr
+	if sanitized {
+		sanitizedValue = strings.ReplaceAll(valueStr, wildcardChar, "")
+	}
 
-    return re.MatchString(sanitizedValue)
+	return re.MatchString(sanitizedValue)
 }
 
 // compactWildcards removes consecutive wildcards from a wildcard string.
 // Reduces "**" to "*".
 func compactWildcards(wildcardString string) string {
-    return strings.ReplaceAll(wildcardString, wildcardChar+wildcardChar, wildcardChar)
+	return strings.ReplaceAll(wildcardString, wildcardChar+wildcardChar, wildcardChar)
 }
 
 // WildcardEqual checks if two wildcard strings are equal after compacting wildcards.
