@@ -1,7 +1,7 @@
 # PermGuard Core
 
 [![Documentation](https://img.shields.io/website?label=Docs&url=https%3A%2F%2Fwww.permguard.com%2F)](https://www.permguard.com/)
-[![PermGuardCoreCI](https://github.com/permguard/permguard-core/actions/workflows/permguard-core-ci.yml/badge.svg)](https://github.com/permguard/permguard-core/actions/workflows/permguard-core-ci.yml)
+[![Build, test and publish the artifacts](https://github.com/permguard/permguard-abs-language/actions/workflows/permguard-authz-ci.yml/badge.svg)](https://github.com/permguard/permguard-abs-language/actions/workflows/permguard-authz-ci.yml)
 [![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=permguard_permguard-core&metric=ncloc)](https://sonarcloud.io/summary/new_code?id=permguard_permguard-core)
 [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=permguard_permguard-core&metric=bugs)](https://sonarcloud.io/summary/new_code?id=permguard_permguard-core)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=permguard_permguard-core&metric=coverage)](https://sonarcloud.io/summary/new_code?id=permguard_permguard-core)
