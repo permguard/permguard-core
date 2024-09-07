@@ -27,19 +27,18 @@ import (
 
 // stringifyObj	converts an object to a string.
 func stringifyObj(obj any, exclude []string) string {
-	if reflect.TypeOf(obj).Kind() == reflect.Array || reflect.TypeOf(obj).Kind() == reflect.Slice {
-		if array, ok := obj.([]any); ok {
-			arrayString := []string{}
-			for _, item := range array {
-				arrayString = append(arrayString, fmt.Sprintf("#%s", stringifyMap(item, exclude)))
-			}
-			arrayBuilder := strings.Builder{}
-			sort.Strings(arrayString)
-			for _, item := range arrayString {
-				arrayBuilder.WriteString(item)
-			}
-			return arrayBuilder.String()
+	val := reflect.ValueOf(obj)
+	if val.Kind() == reflect.Array || val.Kind() == reflect.Slice {
+		arrayString := []string{}
+		for i := 0; i < val.Len(); i++ {
+			arrayString = append(arrayString, fmt.Sprintf("#%s", stringifyObj(val.Index(i).Interface(), exclude)))
 		}
+		arrayBuilder := strings.Builder{}
+		sort.Strings(arrayString)
+		for _, item := range arrayString {
+			arrayBuilder.WriteString(item)
+		}
+		return arrayBuilder.String()
 	}
 	return fmt.Sprintf("%v", obj)
 }
@@ -57,9 +56,13 @@ func stringifyMap(obj any, exclude []string) string {
 			if slices.Contains(exclude, key) {
 				continue
 			}
-			value := (objMap)[key]
+			value := objMap[key]
 			if value != nil {
-				builder.WriteString(fmt.Sprintf("#%s#%s", key, stringifyMap(value, exclude)))
+				if reflect.ValueOf(value).Kind() == reflect.Map {
+					builder.WriteString(fmt.Sprintf("#%s#%s", key, stringifyMap(value, exclude)))
+				} else {
+					builder.WriteString(fmt.Sprintf("#%s#%s", key, stringifyObj(value, exclude)))
+				}
 			}
 		}
 		return builder.String()
@@ -69,6 +72,10 @@ func stringifyMap(obj any, exclude []string) string {
 
 // Stringify converts an object to a string.
 func Stringify(obj any, exclude []string) (string, error) {
+	if reflect.TypeOf(obj).Kind() == reflect.Array || reflect.TypeOf(obj).Kind() == reflect.Slice {
+		return stringifyObj(obj, exclude), nil
+	}
+
 	var objMap map[string]any
 	dataObj, err := json.Marshal(obj)
 	if err != nil {
