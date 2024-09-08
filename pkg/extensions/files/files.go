@@ -176,9 +176,9 @@ func ShouldIgnore(path string, root string, ignorePatterns []string) bool {
 	for _, pattern := range ignorePatterns {
 		isNegation := strings.HasPrefix(pattern, "!")
 		pattern = strings.TrimPrefix(pattern, "!")
-		regexPattern := convertPatternToRegex(pattern)
-		checkPath := filepath.Join(root, regexPattern)
-		matched, _ := regexp.MatchString(checkPath, path)
+		fullPattern := filepath.Join(root, pattern)
+		regexPattern := convertPatternToRegex(fullPattern)
+		matched, _ := regexp.MatchString(regexPattern, path)
 		if matched {
 			if isNegation {
 				ignored = false
