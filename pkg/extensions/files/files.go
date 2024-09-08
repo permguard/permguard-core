@@ -146,19 +146,63 @@ func IsInsideDir(name string) (bool, error) {
 	return false, nil
 }
 
-// ListFiles lists files.
-func ListFiles(name string, exts []string, excludeDirs []string) ([]string, error) {
+// ReadIgnoreFile reads an ignore file.
+func ReadIgnoreFile(name string) ([]string, error) {
+	var ignorePatterns []string
+	data, err := os.ReadFile(name)
+	if err != nil {
+		return nil, err
+	}
+	lines := strings.Split(string(data), "\n")
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+		ignorePatterns = append(ignorePatterns, line)
+	}
+	return ignorePatterns, nil
+}
+
+// ShouldIgnore checks if a file should be ignored.
+func ShouldIgnore(path string, ignorePatterns []string) bool {
+	ignored := false
+	for _, pattern := range ignorePatterns {
+		isNegation := strings.HasPrefix(pattern, "!")
+		pattern = strings.TrimPrefix(pattern, "!")
+		match, _ := filepath.Match(pattern, filepath.Base(path))
+		if match {
+			if isNegation {
+				ignored = false
+			} else {
+				ignored = true
+			}
+		}
+		if strings.HasSuffix(pattern, "/") && strings.HasPrefix(path, strings.TrimSuffix(pattern, "/")) {
+			if isNegation {
+				ignored = false
+			} else {
+				ignored = true
+			}
+		}
+	}
+	return ignored
+}
+
+// ScanAndFilterFiles scans and filters files.
+func ScanAndFilterFiles(rootDir string, exts []string, ignorePatterns []string) ([]string, []string, error) {
 	var files []string
-	err := filepath.Walk(name, func(path string, info os.FileInfo, err error) error {
+	var ignoredFiles []string
+	err := filepath.Walk(rootDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
-		if info.IsDir() && len(excludeDirs) > 0 {
-			for _, excludeDir := range excludeDirs {
-				if info.Name() == excludeDir {
-					return filepath.SkipDir
-				}
+		if ShouldIgnore(path, ignorePatterns) {
+			ignoredFiles = append(ignoredFiles, path)
+			if info.IsDir() {
+				return filepath.SkipDir
 			}
+			return nil
 		}
 		if !info.IsDir() {
 			if len(exts) > 0 {
@@ -178,7 +222,7 @@ func ListFiles(name string, exts []string, excludeDirs []string) ([]string, erro
 		return nil
 	})
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return files, nil
+	return files, ignoredFiles, nil
 }
