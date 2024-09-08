@@ -167,6 +167,7 @@ func ReadIgnoreFile(name string) ([]string, error) {
 
 // convertPatternToRegex converts a pattern to a regex.
 func convertPatternToRegex(pattern string) string {
+	pattern = strings.ReplaceAll(pattern, "**/*", "***")
 	var sbuilder strings.Builder
 	i := 0
 	for i < len(pattern) {
