@@ -170,10 +170,10 @@ func ShouldIgnore(path string, root string, ignorePatterns []string) bool {
 	for _, pattern := range ignorePatterns {
 		isNegation := strings.HasPrefix(pattern, "!")
 		pattern = strings.TrimPrefix(pattern, "!")
-		fullPattern := filepath.Join(root, pattern)
-		if !strings.HasPrefix(fullPattern, "**/") {
-			fullPattern = strings.TrimPrefix(fullPattern, "**/")
+		if !strings.HasPrefix(pattern, "**/") {
+			pattern = strings.TrimPrefix(pattern, "**/")
 		}
+		fullPattern := filepath.Join(root, pattern)
 		matches, _ := filepath.Glob(fullPattern)
 		for _, match := range matches {
 			if match == path {
