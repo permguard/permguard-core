@@ -21,6 +21,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/pelletier/go-toml"
@@ -164,21 +165,20 @@ func ReadIgnoreFile(name string) ([]string, error) {
 	return ignorePatterns, nil
 }
 
-// ShouldIgnore checks if a file should be ignored.
+func convertPatternToRegex(pattern string) string {
+	pattern = strings.ReplaceAll(pattern, "**", ".*")
+	pattern = strings.ReplaceAll(pattern, "*", "[^/]*")
+	return "^" + pattern + "$"
+}
+
 func ShouldIgnore(path string, ignorePatterns []string) bool {
 	ignored := false
 	for _, pattern := range ignorePatterns {
 		isNegation := strings.HasPrefix(pattern, "!")
 		pattern = strings.TrimPrefix(pattern, "!")
-		match, _ := filepath.Match(pattern, filepath.Base(path))
-		if match {
-			if isNegation {
-				ignored = false
-			} else {
-				ignored = true
-			}
-		}
-		if strings.HasSuffix(pattern, "/") && strings.HasPrefix(path, strings.TrimSuffix(pattern, "/")) {
+		regexPattern := convertPatternToRegex(pattern)
+		matched, _ := regexp.MatchString(regexPattern, path)
+		if matched {
 			if isNegation {
 				ignored = false
 			} else {
