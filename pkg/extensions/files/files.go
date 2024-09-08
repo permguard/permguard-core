@@ -171,11 +171,16 @@ func convertPatternToRegex(pattern string) string {
 	i := 0
 	for i < len(pattern) {
 		if i+1 < len(pattern) && pattern[i:i+2] == "**" {
-			sbuilder.WriteString(".*")
+			sbuilder.WriteString("(?:.*/)?")
 			i += 2
 		} else if pattern[i] == '*' {
-			sbuilder.WriteString("[^/]*")
-			i++
+			if i+1 < len(pattern) && pattern[i+1] == '*' {
+				sbuilder.WriteString(".*")
+				i += 2
+			} else {
+				sbuilder.WriteString("[^/]*")
+				i++
+			}
 		} else {
 			sbuilder.WriteString(regexp.QuoteMeta(string(pattern[i])))
 			i++
