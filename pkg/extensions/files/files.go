@@ -21,6 +21,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/pelletier/go-toml"
 )
@@ -95,6 +96,20 @@ func WriteFile(name string, data []byte, perm os.FileMode) (bool, error) {
 	return true, nil
 }
 
+// WriteBinaryFile writes a binary file.
+func WriteBinaryFile(name string, data []byte, perm os.FileMode) (bool, error) {
+	file, err := os.OpenFile(name, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+	if err != nil {
+		return false, err
+	}
+	defer file.Close()
+	_, err = file.Write(data)
+	if err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
 // AppendToFile appends to a file.
 func AppendToFile(name string, data []byte) (bool, error) {
 	file, err := os.OpenFile(name, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
@@ -143,4 +158,41 @@ func IsInsideDir(name string) (bool, error) {
 		currentDir = parentDir
 	}
 	return false, nil
+}
+
+// ListFiles lists files.
+func ListFiles(name string, exts []string, excludeDirs []string) ([]string, error) {
+	var files []string
+	err := filepath.Walk(name, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if info.IsDir() && len(excludeDirs) > 0 {
+			for _, excludeDir := range excludeDirs {
+				if info.Name() == excludeDir {
+					return filepath.SkipDir
+				}
+			}
+		}
+		if !info.IsDir() {
+			if len(exts) > 0 {
+				matched := false
+				for _, ext := range exts {
+					if strings.HasSuffix(strings.ToLower(info.Name()), strings.ToLower(ext)) {
+						matched = true
+						break
+					}
+				}
+				if !matched {
+					return nil
+				}
+			}
+			files = append(files, path)
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return files, nil
 }
