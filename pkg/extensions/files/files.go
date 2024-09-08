@@ -214,6 +214,7 @@ func ScanAndFilterFiles(rootDir string, exts []string, ignorePatterns []string) 
 					}
 				}
 				if !matched {
+					ignoredFiles = append(ignoredFiles, path)
 					return nil
 				}
 			}
