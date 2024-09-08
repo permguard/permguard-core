@@ -165,31 +165,6 @@ func ReadIgnoreFile(name string) ([]string, error) {
 	return ignorePatterns, nil
 }
 
-// convertPatternToRegex converts a pattern to a regex.
-func convertPatternToRegex(pattern string) string {
-	pattern = strings.ReplaceAll(pattern, "**/", "**")
-	var sbuilder strings.Builder
-	i := 0
-	for i < len(pattern) {
-		if i+1 < len(pattern) && pattern[i:i+2] == "**" {
-			sbuilder.WriteString("(?:.*/)?")
-			i += 2
-		} else if pattern[i] == '*' {
-			if i+1 < len(pattern) && pattern[i+1] == '*' {
-				sbuilder.WriteString(".*")
-				i += 2
-			} else {
-				sbuilder.WriteString("[^/]*")
-				i++
-			}
-		} else {
-			sbuilder.WriteString(regexp.QuoteMeta(string(pattern[i])))
-			i++
-		}
-	}
-	return "^" + sbuilder.String() + "$"
-}
-
 // ShouldIgnore checks if a file should be ignored.
 func ShouldIgnore(path string, root string, ignorePatterns []string) bool {
 	ignored := false
@@ -197,13 +172,14 @@ func ShouldIgnore(path string, root string, ignorePatterns []string) bool {
 		isNegation := strings.HasPrefix(pattern, "!")
 		pattern = strings.TrimPrefix(pattern, "!")
 		fullPattern := filepath.Join(root, pattern)
-		regexPattern := convertPatternToRegex(fullPattern)
-		matched, _ := regexp.MatchString(regexPattern, path)
-		if matched {
-			if isNegation {
-				ignored = false
-			} else {
-				ignored = true
+		matches, _ := filepath.Glob(fullPattern)
+		for _, match := range matches {
+			if match == path {
+				if isNegation {
+					ignored = false
+				} else {
+					ignored = true
+				}
 			}
 		}
 	}
