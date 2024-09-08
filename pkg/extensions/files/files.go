@@ -96,20 +96,6 @@ func WriteFile(name string, data []byte, perm os.FileMode) (bool, error) {
 	return true, nil
 }
 
-// WriteBinaryFile writes a binary file.
-func WriteBinaryFile(name string, data []byte, perm os.FileMode) (bool, error) {
-	file, err := os.OpenFile(name, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
-	if err != nil {
-		return false, err
-	}
-	defer file.Close()
-	_, err = file.Write(data)
-	if err != nil {
-		return false, err
-	}
-	return true, nil
-}
-
 // AppendToFile appends to a file.
 func AppendToFile(name string, data []byte) (bool, error) {
 	file, err := os.OpenFile(name, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
