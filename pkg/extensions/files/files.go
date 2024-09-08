@@ -177,8 +177,8 @@ func ShouldIgnore(path string, root string, ignorePatterns []string) bool {
 		isNegation := strings.HasPrefix(pattern, "!")
 		pattern = strings.TrimPrefix(pattern, "!")
 		regexPattern := convertPatternToRegex(pattern)
-		checkPath := filepath.Join(root, path)
-		matched, _ := regexp.MatchString(regexPattern, checkPath)
+		checkPath := filepath.Join(root, regexPattern)
+		matched, _ := regexp.MatchString(checkPath, path)
 		if matched {
 			if isNegation {
 				ignored = false
