@@ -197,7 +197,8 @@ func ScanAndFilterFiles(rootDir string, exts []string, ignorePatterns []string) 
 		if err != nil {
 			return err
 		}
-		if ShouldIgnore(path, ignorePatterns) {
+		checkPath := filepath.Join(rootDir, path)
+		if ShouldIgnore(checkPath, ignorePatterns) {
 			ignoredFiles = append(ignoredFiles, path)
 			if info.IsDir() {
 				return filepath.SkipDir
