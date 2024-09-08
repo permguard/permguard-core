@@ -165,12 +165,14 @@ func ReadIgnoreFile(name string) ([]string, error) {
 	return ignorePatterns, nil
 }
 
+// convertPatternToRegex converts a pattern to a regex.
 func convertPatternToRegex(pattern string) string {
 	pattern = strings.ReplaceAll(pattern, "**", ".*")
 	pattern = strings.ReplaceAll(pattern, "*", "[^/]*")
-	return "^" + pattern + "$"
+	return "^" + regexp.QuoteMeta(pattern) + "$"
 }
 
+// ShouldIgnore checks if a file should be ignored.
 func ShouldIgnore(path string, root string, ignorePatterns []string) bool {
 	ignored := false
 	for _, pattern := range ignorePatterns {
