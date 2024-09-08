@@ -167,9 +167,14 @@ func ReadIgnoreFile(name string) ([]string, error) {
 
 // convertPatternToRegex converts a pattern to a regex.
 func convertPatternToRegex(pattern string) string {
-	pattern = strings.ReplaceAll(pattern, "**", ".*")
-	pattern = strings.ReplaceAll(pattern, "*", "[^/]*")
-	return "^" + regexp.QuoteMeta(pattern) + "$"
+	var sbuilder strings.Builder
+	for i, literal := range strings.Split(pattern, "*") {
+		if i > 0 {
+			sbuilder.WriteString(".*")
+		}
+		sbuilder.WriteString(regexp.QuoteMeta(literal))
+	}
+	return sbuilder.String()
 }
 
 // ShouldIgnore checks if a file should be ignored.
