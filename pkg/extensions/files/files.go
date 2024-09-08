@@ -167,18 +167,23 @@ func ReadIgnoreFile(name string) ([]string, error) {
 
 // convertPatternToRegex converts a pattern to a regex.
 func convertPatternToRegex(pattern string) string {
+	pattern = strings.ReplaceAll(pattern, "**/", "**")
 	var sbuilder strings.Builder
 	i := 0
 	for i < len(pattern) {
-		switch {
-		case i+1 < len(pattern) && pattern[i:i+2] == "**":
-			sbuilder.WriteString("(?:.*/)?") // Gestione di '**' come qualsiasi livello di directory
+		if i+1 < len(pattern) && pattern[i:i+2] == "**" {
+			sbuilder.WriteString("(?:.*/)?")
 			i += 2
-		case pattern[i] == '*':
-			sbuilder.WriteString("[^/]*") // Gestione di '*' come qualsiasi stringa che non include '/'
-			i++
-		default:
-			sbuilder.WriteString(regexp.QuoteMeta(string(pattern[i]))) // Escape per i caratteri speciali
+		} else if pattern[i] == '*' {
+			if i+1 < len(pattern) && pattern[i+1] == '*' {
+				sbuilder.WriteString(".*")
+				i += 2
+			} else {
+				sbuilder.WriteString("[^/]*")
+				i++
+			}
+		} else {
+			sbuilder.WriteString(regexp.QuoteMeta(string(pattern[i])))
 			i++
 		}
 	}
