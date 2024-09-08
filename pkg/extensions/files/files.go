@@ -171,13 +171,14 @@ func convertPatternToRegex(pattern string) string {
 	return "^" + pattern + "$"
 }
 
-func ShouldIgnore(path string, ignorePatterns []string) bool {
+func ShouldIgnore(path string, root string, ignorePatterns []string) bool {
 	ignored := false
 	for _, pattern := range ignorePatterns {
 		isNegation := strings.HasPrefix(pattern, "!")
 		pattern = strings.TrimPrefix(pattern, "!")
 		regexPattern := convertPatternToRegex(pattern)
-		matched, _ := regexp.MatchString(regexPattern, path)
+		checkPath := filepath.Join(root, path)
+		matched, _ := regexp.MatchString(regexPattern, checkPath)
 		if matched {
 			if isNegation {
 				ignored = false
@@ -197,8 +198,7 @@ func ScanAndFilterFiles(rootDir string, exts []string, ignorePatterns []string) 
 		if err != nil {
 			return err
 		}
-		checkPath := filepath.Join(rootDir, path)
-		if ShouldIgnore(checkPath, ignorePatterns) {
+		if ShouldIgnore(path, rootDir, ignorePatterns) {
 			ignoredFiles = append(ignoredFiles, path)
 			if info.IsDir() {
 				return filepath.SkipDir
