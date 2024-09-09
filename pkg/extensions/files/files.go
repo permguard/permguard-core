@@ -110,12 +110,17 @@ func AppendToFile(name string, data []byte) (bool, error) {
 }
 
 // ReadFile reads a file.
-func ReadFile(name string) ([]byte, error) {
+func ReadFile(name string) ([]byte, uint32, error) {
 	data, err := os.ReadFile(name)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
-	return data, nil
+	info, err := os.Stat(name)
+	if err != nil {
+		return nil, 0, err
+	}
+	mode := uint32(info.Mode().Perm())
+	return data, mode, nil
 }
 
 // ReadTOMLFile reads a TOML file.
