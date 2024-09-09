@@ -4,7 +4,7 @@ go 1.23.0
 
 require (
 	github.com/davecgh/go-spew v1.1.1
-	github.com/go-playground/validator/v10 v10.22.0
+	github.com/go-playground/validator/v10 v10.22.1
 	github.com/google/uuid v1.6.0
 	github.com/jinzhu/copier v0.4.0
 	github.com/pelletier/go-toml v1.9.5
