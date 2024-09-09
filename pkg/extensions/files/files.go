@@ -166,12 +166,12 @@ func ReadIgnoreFile(name string) ([]string, error) {
 
 // normalizePattern normalizes a pattern.
 func normalizePattern(pattern string) string {
+	if strings.Contains(pattern, "***") {
+		pattern = strings.ReplaceAll(pattern, "***", "**")
+	}
 	if strings.HasPrefix(pattern, "**/") {
 		pattern = strings.TrimPrefix(pattern, "**/")
 		pattern = "**" + pattern
-	}
-	if strings.Contains(pattern, "***") {
-		pattern = strings.ReplaceAll(pattern, "***", "**")
 	}
 	return pattern
 }
