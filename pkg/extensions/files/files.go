@@ -109,6 +109,15 @@ func AppendToFile(name string, data []byte) (bool, error) {
 	return true, nil
 }
 
+// ReadFile reads a file.
+func ReadFile(name string) ([]byte, error) {
+	data, err := os.ReadFile(name)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
+}
+
 // ReadTOMLFile reads a TOML file.
 func ReadTOMLFile(name string, v any) error {
 	file, err := os.Open(name)
