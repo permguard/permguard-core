@@ -74,6 +74,21 @@ func CreateDirIfNotExists(name string) (bool, error) {
 	return true, nil
 }
 
+// DeleteDir deletes the input directory.
+func DeleteDir(name string) (bool, error) {
+	if _, err := os.Stat(name); err == nil {
+		err := os.RemoveAll(name)
+		if err != nil {
+			return false, errors.New("core: failed to remove directory")
+		}
+	} else if os.IsNotExist(err) {
+		return false, nil
+	} else {
+		return false, errors.New("core: failed to stat directory")
+	}
+	return true, nil
+}
+
 // WriteFileIfNotExists writes a file if it does not exist.
 func WriteFileIfNotExists(name string, data []byte, perm os.FileMode) (bool, error) {
 	if _, err := os.Stat(name); err == nil {
