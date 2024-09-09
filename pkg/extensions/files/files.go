@@ -164,15 +164,25 @@ func ReadIgnoreFile(name string) ([]string, error) {
 	return ignorePatterns, nil
 }
 
+// normalizePattern normalizes a pattern.
+func normalizePattern(pattern string) string {
+	if strings.HasPrefix(pattern, "**/") {
+		pattern = strings.TrimPrefix(pattern, "**/")
+		pattern = "**" + pattern
+	}
+	if strings.Contains(pattern, "***") {
+		pattern = strings.ReplaceAll(pattern, "***", "**")
+	}
+	return pattern
+}
+
 // ShouldIgnore checks if a file should be ignored.
 func ShouldIgnore(path string, root string, ignorePatterns []string) bool {
 	ignored := false
 	for _, pattern := range ignorePatterns {
 		isNegation := strings.HasPrefix(pattern, "!")
 		pattern = strings.TrimPrefix(pattern, "!")
-		if !strings.HasPrefix(pattern, "**/") {
-			pattern = strings.TrimPrefix(pattern, "**/")
-		}
+		pattern = normalizePattern(pattern)
 		fullPattern := filepath.Join(root, pattern)
 		matches, _ := filepath.Glob(fullPattern)
 		for _, match := range matches {
