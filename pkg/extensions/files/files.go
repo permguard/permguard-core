@@ -17,10 +17,12 @@
 package files
 
 import (
+	"encoding/csv"
 	"errors"
 	"io"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 
 	"github.com/pelletier/go-toml"
@@ -122,6 +124,32 @@ func AppendToFile(name string, data []byte) (bool, error) {
 		return false, errors.New("core: failed to write to file")
 	}
 	return true, nil
+}
+
+// WriteCSVStream writes a CSV stream.
+func WriteCSVStream(filename string, header []string, records interface{}, rowFunc func(interface{}) []string) error {
+	file, err := os.Create(filename)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	writer := csv.NewWriter(file)
+	defer writer.Flush()
+	if err := writer.Write(header); err != nil {
+		return err
+	}
+	v := reflect.ValueOf(records)
+	if v.Kind() != reflect.Slice {
+		return errors.New("core: records must be a slice")
+	}
+	for i := 0; i < v.Len(); i++ {
+		record := v.Index(i).Interface()
+		row := rowFunc(record)
+		if err := writer.Write(row); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // ReadFile reads a file.
