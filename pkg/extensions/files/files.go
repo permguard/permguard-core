@@ -17,6 +17,7 @@
 package files
 
 import (
+	"compress/gzip"
 	"encoding/csv"
 	"errors"
 	"io"
@@ -133,8 +134,13 @@ func WriteCSVStream(filename string, header []string, records interface{}, rowFu
 		return err
 	}
 	defer file.Close()
-	writer := csv.NewWriter(file)
+
+	gzipWriter := gzip.NewWriter(file)
+	defer gzipWriter.Close()
+
+	writer := csv.NewWriter(gzipWriter)
 	defer writer.Flush()
+
 	if header == nil {
 		if err := writer.Write(header); err != nil {
 			return err
