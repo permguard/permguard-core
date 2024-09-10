@@ -17,6 +17,7 @@
 package files
 
 import (
+	"bytes"
 	"compress/zlib"
 	"encoding/csv"
 	"errors"
@@ -93,23 +94,40 @@ func DeleteDir(name string) (bool, error) {
 }
 
 // WriteFileIfNotExists writes a file if it does not exist.
-func WriteFileIfNotExists(name string, data []byte, perm os.FileMode) (bool, error) {
+func WriteFileIfNotExists(name string, data []byte, perm os.FileMode, compressed bool) (bool, error) {
 	if _, err := os.Stat(name); err == nil {
 		return false, nil
 	} else if os.IsExist(err) {
 		return false, nil
 	} else if os.IsNotExist(err) {
-		return WriteFile(name, data, perm)
+		return WriteFile(name, data, perm, compressed)
 	} else {
 		return false, errors.New("core: failed to stat file")
 	}
 }
 
 // WriteFile writes a file.
-func WriteFile(name string, data []byte, perm os.FileMode) (bool, error) {
-	err := os.WriteFile(name, data, 0644)
-	if err != nil {
-		return false, errors.New("core: failed to write file")
+func WriteFile(name string, data []byte, perm os.FileMode, compressed bool) (bool, error) {
+	if compressed {
+		var buf bytes.Buffer
+		zlibWriter := zlib.NewWriter(&buf)
+		_, err := zlibWriter.Write(data)
+		if err != nil {
+			return false, errors.New("core: failed to compress data")
+		}
+		err = zlibWriter.Close()
+		if err != nil {
+			return false, errors.New("core: failed to close zlib writer")
+		}
+		err = os.WriteFile(name, buf.Bytes(), perm)
+		if err != nil {
+			return false, errors.New("core: failed to write compressed file")
+		}
+	} else {
+		err := os.WriteFile(name, data, perm)
+		if err != nil {
+			return false, errors.New("core: failed to write file")
+		}
 	}
 	return true, nil
 }
