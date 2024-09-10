@@ -135,8 +135,10 @@ func WriteCSVStream(filename string, header []string, records interface{}, rowFu
 	defer file.Close()
 	writer := csv.NewWriter(file)
 	defer writer.Flush()
-	if err := writer.Write(header); err != nil {
-		return err
+	if header == nil {
+		if err := writer.Write(header); err != nil {
+			return err
+		}
 	}
 	v := reflect.ValueOf(records)
 	if v.Kind() != reflect.Slice {
