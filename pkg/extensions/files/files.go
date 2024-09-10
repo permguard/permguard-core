@@ -17,7 +17,7 @@
 package files
 
 import (
-	"compress/gzip"
+	"compress/zlib"
 	"encoding/csv"
 	"errors"
 	"io"
@@ -135,10 +135,10 @@ func WriteCSVStream(filename string, header []string, records interface{}, rowFu
 	}
 	defer file.Close()
 
-	gzipWriter := gzip.NewWriter(file)
-	defer gzipWriter.Close()
+	zlibWriter := zlib.NewWriter(file)
+	defer zlibWriter.Close()
 
-	writer := csv.NewWriter(gzipWriter)
+	writer := csv.NewWriter(zlibWriter)
 	defer writer.Flush()
 
 	if header == nil {
