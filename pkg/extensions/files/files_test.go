@@ -110,12 +110,12 @@ func TestWriteFileIfNotExists(t *testing.T) {
 	data := []byte("Hello, World!")
 
 	// Test writing a new file
-	written, err := WriteFileIfNotExists(fileName, data, 0644)
+	written, err := WriteFileIfNotExists(fileName, data, 0644, false)
 	assert.Nil(err)
 	assert.True(written)
 
 	// Test with existing file
-	written, err = WriteFileIfNotExists(fileName, data, 0644)
+	written, err = WriteFileIfNotExists(fileName, data, 0644, false)
 	assert.Nil(err)
 	assert.False(written)
 
@@ -163,7 +163,7 @@ age = 30
 `)
 
 	// Write the TOML file
-	_, err = WriteFile(fileName, data, 0644)
+	_, err = WriteFile(fileName, data, 0644, false)
 	assert.Nil(err)
 
 	// Define a structure to read the TOML data

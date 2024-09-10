@@ -179,7 +179,7 @@ func WriteCSVStream(filename string, header []string, records interface{}, rowFu
 }
 
 // ReadFile reads a file.
-func ReadFile(name string) ([]byte, uint32, error) {
+func ReadFile(name string, compressed bool) ([]byte, uint32, error) {
 	data, err := os.ReadFile(name)
 	if err != nil {
 		return nil, 0, err
@@ -189,6 +189,21 @@ func ReadFile(name string) ([]byte, uint32, error) {
 		return nil, 0, err
 	}
 	mode := uint32(info.Mode().Perm())
+	if compressed {
+		var buf bytes.Buffer
+		buf.Write(data)
+		zr, err := zlib.NewReader(&buf)
+		if err != nil {
+			return nil, 0, err
+		}
+		defer zr.Close()
+		var decompressed bytes.Buffer
+		_, err = io.Copy(&decompressed, zr)
+		if err != nil {
+			return nil, 0, err
+		}
+		data = decompressed.Bytes()
+	}
 	return data, mode, nil
 }
 
