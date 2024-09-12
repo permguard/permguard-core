@@ -17,3 +17,5 @@
 `PermGuard` is an Open Source Authorization Provider for cloud-native, edge, and multi-tenant apps, decoupled from application code and leveraging `Policy-as-Code` for centralized, scalable permission management.
 
 This repository implements the corelibrary.
+
+Created by [Nitro Agility](https://www.nitroagility.com/).
