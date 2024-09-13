@@ -178,6 +178,40 @@ func WriteCSVStream(filename string, header []string, records interface{}, rowFu
 	return nil
 }
 
+// ReadFromCSVStream reads from a CSV stream.
+func ReadFromCSVStream(filename string, header []string, recordFunc func([]string) error) error {
+	file, err := os.Open(filename)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	zlibReader, err := zlib.NewReader(file)
+	if err != nil {
+		return err
+	}
+	defer zlibReader.Close()
+	reader := csv.NewReader(zlibReader)
+	if header != nil {
+		if _, err := reader.Read(); err != nil {
+			return err
+		}
+	}
+	for {
+		record, err := reader.Read()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return err
+		}
+		if err := recordFunc(record); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+
 // ReadFile reads a file.
 func ReadFile(name string, compressed bool) ([]byte, uint32, error) {
 	data, err := os.ReadFile(name)
