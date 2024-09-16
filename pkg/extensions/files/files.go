@@ -139,16 +139,13 @@ func WriteFile(name string, data []byte, perm os.FileMode, compressed bool) (boo
 }
 
 // AppendToFile appends to a file.
-func AppendToFile(name string, data []byte) (bool, error) {
-	file, err := os.OpenFile(name, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		return false, errors.New("core: failed to open file")
+func AppendToFile(name string, data []byte, compressed bool) (bool, error) {
+	existingData, _, err := ReadFile(name, compressed)
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
+		return false, errors.New("core: failed to read file")
 	}
-	defer file.Close()
-	if _, err := file.WriteString(string(data)); err != nil {
-		return false, errors.New("core: failed to write to file")
-	}
-	return true, nil
+	newData := append(existingData, data...)
+	return WriteFile(name, newData, 0644, compressed)
 }
 
 // ReadFile reads a file.
