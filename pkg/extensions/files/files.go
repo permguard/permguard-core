@@ -74,6 +74,21 @@ func CreateDirIfNotExists(name string) (bool, error) {
 	return true, nil
 }
 
+// InMemory
+
+// CompressData compresses data.
+func CompressData(data []byte) ([]byte, error) {
+	var buf bytes.Buffer
+	zlibWriter := zlib.NewWriter(&buf)
+	if _, err := zlibWriter.Write(data); err != nil {
+		return nil, err
+	}
+	if err := zlibWriter.Close(); err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
+}
+
 // Files
 
 // CreateFileIfNotExists creates a file if it does not exist.
@@ -255,21 +270,22 @@ func ScanAndFilterFiles(rootDir string, exts []string, ignorePatterns []string) 
 // CSV
 
 // WriteCSVStream writes a CSV stream.
-func WriteCSVStream(filename string, header []string, records interface{}, rowFunc func(interface{}) []string) error {
+func WriteCSVStream(filename string, header []string, records interface{}, rowFunc func(interface{}) []string, compressed bool) error {
 	file, err := os.Create(filename)
 	if err != nil {
 		return err
 	}
 	defer file.Close()
-
-	zlibWriter := zlib.NewWriter(file)
-	defer zlibWriter.Close()
-
-	writer := csv.NewWriter(zlibWriter)
-	defer writer.Flush()
-
+	var writer io.Writer = file
+	if compressed {
+		zlibWriter := zlib.NewWriter(file)
+		defer zlibWriter.Close()
+		writer = zlibWriter
+	}
+	csvWriter := csv.NewWriter(writer)
+	defer csvWriter.Flush()
 	if header == nil {
-		if err := writer.Write(header); err != nil {
+		if err := csvWriter.Write(header); err != nil {
 			return err
 		}
 	}
@@ -280,7 +296,7 @@ func WriteCSVStream(filename string, header []string, records interface{}, rowFu
 	for i := 0; i < v.Len(); i++ {
 		record := v.Index(i).Interface()
 		row := rowFunc(record)
-		if err := writer.Write(row); err != nil {
+		if err := csvWriter.Write(row); err != nil {
 			return err
 		}
 	}
@@ -288,25 +304,29 @@ func WriteCSVStream(filename string, header []string, records interface{}, rowFu
 }
 
 // ReadCSVStream reads from a CSV stream.
-func ReadCSVStream(filename string, header []string, recordFunc func([]string) error) error {
+func ReadCSVStream(filename string, header []string, recordFunc func([]string) error, compressed bool) error {
 	file, err := os.Open(filename)
 	if err != nil {
 		return err
 	}
 	defer file.Close()
-	zlibReader, err := zlib.NewReader(file)
-	if err != nil {
-		return err
+	var reader io.Reader = file
+	if compressed {
+		zlibReader, err := zlib.NewReader(file)
+		if err != nil {
+			return err
+		}
+		defer zlibReader.Close()
+		reader = zlibReader
 	}
-	defer zlibReader.Close()
-	reader := csv.NewReader(zlibReader)
+	csvReader := csv.NewReader(reader)
 	if header != nil {
-		if _, err := reader.Read(); err != nil {
+		if _, err := csvReader.Read(); err != nil {
 			return err
 		}
 	}
 	for {
-		record, err := reader.Read()
+		record, err := csvReader.Read()
 		if err == io.EOF {
 			break
 		}

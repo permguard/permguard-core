@@ -135,12 +135,12 @@ func TestAppendToFile(t *testing.T) {
 	data := []byte("Hello, World!\n")
 
 	// Create the file and append data
-	written, err := AppendToFile(fileName, data)
+	written, err := AppendToFile(fileName, data, false)
 	assert.Nil(err)
 	assert.True(written)
 
 	// Append more data
-	written, err = AppendToFile(fileName, []byte("Another line\n"))
+	written, err = AppendToFile(fileName, []byte("Another line\n"), false)
 	assert.Nil(err)
 	assert.True(written)
 
