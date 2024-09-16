@@ -25,7 +25,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestCheckFileIfExists(t *testing.T) {
+func TestCheckPathIfExists(t *testing.T) {
 	assert := assert.New(t)
 
 	folderName := filepath.Join(".tmp", uuid.NewString())
@@ -41,12 +41,12 @@ func TestCheckFileIfExists(t *testing.T) {
 	file.Close()
 
 	// Test with existing file
-	exists, err := CheckFileIfExists(existingFile)
+	exists, err := CheckPathIfExists(existingFile)
 	assert.Nil(err)
 	assert.True(exists)
 
 	// Test with non-existing file
-	exists, err = CheckFileIfExists(nonExistingFile)
+	exists, err = CheckPathIfExists(nonExistingFile)
 	assert.Nil(err)
 	assert.False(exists)
 
@@ -181,22 +181,4 @@ age = 30
 	// Clean up the test folder
 	err = os.RemoveAll(folderName)
 	assert.Nil(err)
-}
-
-func TestIsInsideDir(t *testing.T) {
-	assert := assert.New(t)
-
-	// Assume the test is running inside a valid directory
-	currentDir, err := os.Getwd()
-	assert.Nil(err)
-
-	// Test if the current directory is inside its own name
-	exists, err := IsInsideDir(filepath.Base(currentDir))
-	assert.Nil(err)
-	assert.True(exists)
-
-	// Test with a non-existing directory
-	exists, err = IsInsideDir("non_existing_dir")
-	assert.Nil(err)
-	assert.False(exists)
 }

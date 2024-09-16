@@ -30,8 +30,10 @@ import (
 	"github.com/pelletier/go-toml"
 )
 
-// CheckFileIfExists checks if a file exists.
-func CheckFileIfExists(name string) (bool, error) {
+// Path
+
+// CheckPathIfExists checks if a path exists.
+func CheckPathIfExists(name string) (bool, error) {
 	if _, err := os.Stat(name); err == nil {
 		return true, nil
 	} else if os.IsNotExist(err) {
@@ -39,6 +41,40 @@ func CheckFileIfExists(name string) (bool, error) {
 	}
 	return true, nil
 }
+
+// DeletePath deletes the input directory.
+func DeletePath(name string) (bool, error) {
+	if _, err := os.Stat(name); err == nil {
+		err := os.RemoveAll(name)
+		if err != nil {
+			return false, errors.New("core: failed to remove directory")
+		}
+	} else if os.IsNotExist(err) {
+		return false, nil
+	} else {
+		return false, errors.New("core: failed to stat directory")
+	}
+	return true, nil
+}
+
+// Directories
+
+// CreateDirIfNotExists creates a directory if it does not exist.
+func CreateDirIfNotExists(name string) (bool, error) {
+	if _, err := os.Stat(name); err == nil {
+		return false, nil
+	} else if os.IsNotExist(err) {
+		err := os.MkdirAll(name, 0755)
+		if err != nil {
+			return false, errors.New("core: failed to create directory")
+		}
+	} else {
+		return false, errors.New("core: failed to stat directory")
+	}
+	return true, nil
+}
+
+// Files
 
 // CreateFileIfNotExists creates a file if it does not exist.
 func CreateFileIfNotExists(name string) (bool, error) {
@@ -59,36 +95,6 @@ func CreateFileIfNotExists(name string) (bool, error) {
 		return false, nil
 	} else {
 		return false, errors.New("core: failed to stat file")
-	}
-	return true, nil
-}
-
-// CreateDirIfNotExists creates a directory if it does not exist.
-func CreateDirIfNotExists(name string) (bool, error) {
-	if _, err := os.Stat(name); err == nil {
-		return false, nil
-	} else if os.IsNotExist(err) {
-		err := os.MkdirAll(name, 0755)
-		if err != nil {
-			return false, errors.New("core: failed to create directory")
-		}
-	} else {
-		return false, errors.New("core: failed to stat directory")
-	}
-	return true, nil
-}
-
-// DeleteDir deletes the input directory.
-func DeleteDir(name string) (bool, error) {
-	if _, err := os.Stat(name); err == nil {
-		err := os.RemoveAll(name)
-		if err != nil {
-			return false, errors.New("core: failed to remove directory")
-		}
-	} else if os.IsNotExist(err) {
-		return false, nil
-	} else {
-		return false, errors.New("core: failed to stat directory")
 	}
 	return true, nil
 }
@@ -145,6 +151,112 @@ func AppendToFile(name string, data []byte) (bool, error) {
 	return true, nil
 }
 
+// ReadFile reads a file.
+func ReadFile(name string, compressed bool) ([]byte, uint32, error) {
+	data, err := os.ReadFile(name)
+	if err != nil {
+		return nil, 0, err
+	}
+	info, err := os.Stat(name)
+	if err != nil {
+		return nil, 0, err
+	}
+	mode := uint32(info.Mode().Perm())
+	if compressed {
+		var buf bytes.Buffer
+		buf.Write(data)
+		zr, err := zlib.NewReader(&buf)
+		if err != nil {
+			return nil, 0, err
+		}
+		defer zr.Close()
+		var decompressed bytes.Buffer
+		_, err = io.Copy(&decompressed, zr)
+		if err != nil {
+			return nil, 0, err
+		}
+		data = decompressed.Bytes()
+	}
+	return data, mode, nil
+}
+
+// Search
+
+// normalizePattern normalizes a pattern.
+func normalizePattern(pattern string) string {
+	if strings.Contains(pattern, "***") {
+		pattern = strings.ReplaceAll(pattern, "***", "**")
+	}
+	if strings.HasPrefix(pattern, "**/") {
+		pattern = strings.TrimPrefix(pattern, "**/")
+		pattern = "**" + pattern
+	}
+	return pattern
+}
+
+// shouldIgnore checks if a file should be ignored.
+func shouldIgnore(path string, root string, ignorePatterns []string) bool {
+	ignored := false
+	for _, pattern := range ignorePatterns {
+		isNegation := strings.HasPrefix(pattern, "!")
+		pattern = strings.TrimPrefix(pattern, "!")
+		pattern = normalizePattern(pattern)
+		fullPattern := filepath.Join(root, pattern)
+		matches, _ := filepath.Glob(fullPattern)
+		for _, match := range matches {
+			if match == path {
+				if isNegation {
+					ignored = false
+				} else {
+					ignored = true
+				}
+			}
+		}
+	}
+	return ignored
+}
+
+// ScanAndFilterFiles scans and filters files.
+func ScanAndFilterFiles(rootDir string, exts []string, ignorePatterns []string) ([]string, []string, error) {
+	var files []string
+	var ignoredFiles []string
+	err := filepath.Walk(rootDir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if shouldIgnore(path, rootDir, ignorePatterns) {
+			ignoredFiles = append(ignoredFiles, path)
+			if info.IsDir() {
+				return filepath.SkipDir
+			}
+			return nil
+		}
+		if !info.IsDir() {
+			if len(exts) > 0 {
+				matched := false
+				for _, ext := range exts {
+					if strings.HasSuffix(strings.ToLower(info.Name()), strings.ToLower(ext)) {
+						matched = true
+						break
+					}
+				}
+				if !matched {
+					ignoredFiles = append(ignoredFiles, path)
+					return nil
+				}
+			}
+			files = append(files, path)
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, nil, err
+	}
+	return files, ignoredFiles, nil
+}
+
+// CSV
+
 // WriteCSVStream writes a CSV stream.
 func WriteCSVStream(filename string, header []string, records interface{}, rowFunc func(interface{}) []string) error {
 	file, err := os.Create(filename)
@@ -178,8 +290,8 @@ func WriteCSVStream(filename string, header []string, records interface{}, rowFu
 	return nil
 }
 
-// ReadFromCSVStream reads from a CSV stream.
-func ReadFromCSVStream(filename string, header []string, recordFunc func([]string) error) error {
+// ReadCSVStream reads from a CSV stream.
+func ReadCSVStream(filename string, header []string, recordFunc func([]string) error) error {
 	file, err := os.Open(filename)
 	if err != nil {
 		return err
@@ -211,72 +323,7 @@ func ReadFromCSVStream(filename string, header []string, recordFunc func([]strin
 	return nil
 }
 
-
-// ReadFile reads a file.
-func ReadFile(name string, compressed bool) ([]byte, uint32, error) {
-	data, err := os.ReadFile(name)
-	if err != nil {
-		return nil, 0, err
-	}
-	info, err := os.Stat(name)
-	if err != nil {
-		return nil, 0, err
-	}
-	mode := uint32(info.Mode().Perm())
-	if compressed {
-		var buf bytes.Buffer
-		buf.Write(data)
-		zr, err := zlib.NewReader(&buf)
-		if err != nil {
-			return nil, 0, err
-		}
-		defer zr.Close()
-		var decompressed bytes.Buffer
-		_, err = io.Copy(&decompressed, zr)
-		if err != nil {
-			return nil, 0, err
-		}
-		data = decompressed.Bytes()
-	}
-	return data, mode, nil
-}
-
-// ReadTOMLFile reads a TOML file.
-func ReadTOMLFile(name string, v any) error {
-	file, err := os.Open(name)
-	if err != nil {
-		return errors.New("core: failed to open file")
-	}
-	defer file.Close()
-	b, err := io.ReadAll(file)
-	if err != nil {
-		return errors.New("core: failed to read file")
-	}
-	err = toml.Unmarshal(b, v)
-	if err != nil {
-		return errors.New("core: failed to unmarshal TOML")
-	}
-	return nil
-}
-
-// IsInsideDir checks if a directory is inside another directory.
-func IsInsideDir(name string) (bool, error) {
-	currentDir, err := os.Getwd()
-	if err != nil {
-		return false, errors.New("core: failed to get current directory")
-	}
-	for {
-		if filepath.Base(currentDir) == name {
-			return true, nil
-		}
-		parentDir := filepath.Dir(currentDir)
-		if parentDir == currentDir {
-			break
-		}
-		currentDir = parentDir
-	}
-	return false, nil
-}
+// Ignore file
 
 // ReadIgnoreFile reads an ignore file.
 func ReadIgnoreFile(name string) ([]string, error) {
@@ -296,75 +343,22 @@ func ReadIgnoreFile(name string) ([]string, error) {
 	return ignorePatterns, nil
 }
 
-// normalizePattern normalizes a pattern.
-func normalizePattern(pattern string) string {
-	if strings.Contains(pattern, "***") {
-		pattern = strings.ReplaceAll(pattern, "***", "**")
-	}
-	if strings.HasPrefix(pattern, "**/") {
-		pattern = strings.TrimPrefix(pattern, "**/")
-		pattern = "**" + pattern
-	}
-	return pattern
-}
+// TOML
 
-// ShouldIgnore checks if a file should be ignored.
-func ShouldIgnore(path string, root string, ignorePatterns []string) bool {
-	ignored := false
-	for _, pattern := range ignorePatterns {
-		isNegation := strings.HasPrefix(pattern, "!")
-		pattern = strings.TrimPrefix(pattern, "!")
-		pattern = normalizePattern(pattern)
-		fullPattern := filepath.Join(root, pattern)
-		matches, _ := filepath.Glob(fullPattern)
-		for _, match := range matches {
-			if match == path {
-				if isNegation {
-					ignored = false
-				} else {
-					ignored = true
-				}
-			}
-		}
-	}
-	return ignored
-}
-
-// ScanAndFilterFiles scans and filters files.
-func ScanAndFilterFiles(rootDir string, exts []string, ignorePatterns []string) ([]string, []string, error) {
-	var files []string
-	var ignoredFiles []string
-	err := filepath.Walk(rootDir, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		if ShouldIgnore(path, rootDir, ignorePatterns) {
-			ignoredFiles = append(ignoredFiles, path)
-			if info.IsDir() {
-				return filepath.SkipDir
-			}
-			return nil
-		}
-		if !info.IsDir() {
-			if len(exts) > 0 {
-				matched := false
-				for _, ext := range exts {
-					if strings.HasSuffix(strings.ToLower(info.Name()), strings.ToLower(ext)) {
-						matched = true
-						break
-					}
-				}
-				if !matched {
-					ignoredFiles = append(ignoredFiles, path)
-					return nil
-				}
-			}
-			files = append(files, path)
-		}
-		return nil
-	})
+// ReadTOMLFile reads a TOML file.
+func ReadTOMLFile(name string, v any) error {
+	file, err := os.Open(name)
 	if err != nil {
-		return nil, nil, err
+		return errors.New("core: failed to open file")
 	}
-	return files, ignoredFiles, nil
+	defer file.Close()
+	b, err := io.ReadAll(file)
+	if err != nil {
+		return errors.New("core: failed to read file")
+	}
+	err = toml.Unmarshal(b, v)
+	if err != nil {
+		return errors.New("core: failed to unmarshal TOML")
+	}
+	return nil
 }
