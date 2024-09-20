@@ -270,7 +270,7 @@ func ScanAndFilterFiles(rootDir string, exts []string, ignorePatterns []string) 
 // CSV
 
 // WriteCSVStream writes a CSV stream.
-func WriteCSVStream(filename string, header []string, records interface{}, rowFunc func(interface{}) []string, compressed bool) error {
+func WriteCSVStream(filename string, header []string, records any, rowFunc func(any) []string, compressed bool) error {
 	file, err := os.Create(filename)
 	if err != nil {
 		return err
