@@ -89,6 +89,23 @@ func CompressData(data []byte) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+// DecompressData decompresses data.
+func DecompressData(data []byte) ([]byte, error) {
+	var buf bytes.Buffer
+	buf.Write(data)
+	zlibReader, err := zlib.NewReader(&buf)
+	if err != nil {
+		return nil, err
+	}
+	defer zlibReader.Close()
+
+	var outBuf bytes.Buffer
+	if _, err := outBuf.ReadFrom(zlibReader); err != nil {
+		return nil, err
+	}
+	return outBuf.Bytes(), nil
+}
+
 // Files
 
 // CreateFileIfNotExists creates a file if it does not exist.
