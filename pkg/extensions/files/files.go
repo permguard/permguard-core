@@ -245,6 +245,38 @@ func shouldIgnore(path string, root string, ignorePatterns []string) bool {
 	return ignored
 }
 
+// ListDirectories lists directories.
+func ListDirectories(path string) ([]string, error) {
+	var directories []string
+	entries, err := os.ReadDir(path)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, entry := range entries {
+		if entry.IsDir() {
+			directories = append(directories, entry.Name())
+		}
+	}
+	return directories, nil
+}
+
+// ListFiles lists files.
+func ListFiles(path string) ([]string, error) {
+	var files []string
+	entries, err := os.ReadDir(path)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, entry := range entries {
+		if !entry.IsDir() {
+			files = append(files, entry.Name())
+		}
+	}
+	return files, nil
+}
+
 // ScanAndFilterFiles scans and filters files.
 func ScanAndFilterFiles(rootDir string, exts []string, ignorePatterns []string) ([]string, []string, error) {
 	var files []string
