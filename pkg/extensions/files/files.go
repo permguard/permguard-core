@@ -19,13 +19,17 @@ package files
 import (
 	"bytes"
 	"compress/zlib"
+	"crypto/rand"
 	"encoding/csv"
+	"encoding/hex"
 	"errors"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
 	"reflect"
 	"strings"
+	"time"
 
 	"github.com/pelletier/go-toml"
 )
@@ -107,6 +111,19 @@ func DecompressData(data []byte) ([]byte, error) {
 }
 
 // Files
+
+// GenerateUniqueFile generates a unique file name.
+func GenerateUniqueFile(prefix string, extension string) (string, error) {
+	timestamp := time.Now().Unix() % 1000000
+	randomBytes := make([]byte, 4)
+	_, err := rand.Read(randomBytes)
+	if err != nil {
+		return "", fmt.Errorf("core: failed to generate an unique file name %v", err)
+	}
+	randomString := hex.EncodeToString(randomBytes)
+	fileName := fmt.Sprintf("%s-%d-%s.%s", prefix, timestamp, randomString, extension)
+	return fileName, nil
+}
 
 // CreateFileIfNotExists creates a file if it does not exist.
 func CreateFileIfNotExists(name string) (bool, error) {
