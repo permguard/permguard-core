@@ -180,8 +180,8 @@ func TestWildcardString(t *testing.T) {
 func TestWildcardStringCompare(t *testing.T) {
 	assert := assert.New(t)
 	{
-		pattern := "ar:staff:manage*"
-		value := "ar:staff:manage"
+		pattern := "staff:manage*"
+		value := "staff:manage"
 		assert.False(WildcardString(pattern).WildcardEqual(value), "wrong result\ngot: %sdon't want: %s", spew.Sdump(pattern), spew.Sdump(value))
 		assert.True(WildcardString(pattern).WildcardInclude(value), "wrong result\ngot: %sdon'tshouldn't be greather then: %s", spew.Sdump(value), spew.Sdump(pattern))
 	}
