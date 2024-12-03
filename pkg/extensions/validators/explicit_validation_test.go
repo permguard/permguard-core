@@ -70,19 +70,19 @@ func TestValidateSimpleName(t *testing.T) {
 	assert.False(isValid)
 }
 
-func TestValidateAccountID(t *testing.T) {
+func TestValidateCodeID(t *testing.T) {
 	assert := assert.New(t)
 
-	// Test 1: Valid account ID
-	isValid := ValidateAccountID(123456789012)
+	// Test 1: Valid code id
+	isValid := ValidateCodeID(123456789012)
 	assert.True(isValid)
 
-	// Test 2: Invalid account ID (out of range)
-	isValid = ValidateAccountID(9999999999999)
+	// Test 2: Invalid code id (out of range)
+	isValid = ValidateCodeID(9999999999999)
 	assert.False(isValid)
 
-	// Test 3: Invalid account ID (negative value)
-	isValid = ValidateAccountID(-123456789012)
+	// Test 3: Invalid code id (negative value)
+	isValid = ValidateCodeID(-123456789012)
 	assert.False(isValid)
 }
 
