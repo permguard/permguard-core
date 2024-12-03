@@ -68,17 +68,17 @@ func ValidateSimpleName(name string) bool {
 	return isValid && err == nil
 }
 
-// ValidateAccountID validates an account ID.
-func ValidateAccountID(accountID int64) bool {
-	vAccountID := struct {
-		AccountID int64 `validate:"required,gt=0"`
-	}{AccountID: accountID}
-	if isValid, err := ValidateInstance(vAccountID); err != nil || !isValid {
+// ValidateCodeID validates an code id.
+func ValidateCodeID(codeID int64) bool {
+	vCodeID := struct {
+		CodeID int64 `validate:"required,gt=0"`
+	}{CodeID: codeID}
+	if isValid, err := ValidateInstance(vCodeID); err != nil || !isValid {
 		return false
 	}
 	min := int64(100000000000)
 	max := int64(999999999999)
-	if accountID < min || accountID > max {
+	if codeID < min || codeID > max {
 		return false
 	}
 	return true
