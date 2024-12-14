@@ -18,8 +18,8 @@ package copier
 
 // MergeMaps merges two maps into a single map.
 func MergeMaps(map1, map2 map[string]any) map[string]any {
-    for key, value := range map2 {
-        map1[key] = value
-    }
-    return map1
+	for key, value := range map2 {
+		map1[key] = value
+	}
+	return map1
 }
