@@ -33,7 +33,7 @@ func isSimpleName(fl validator.FieldLevel) bool {
 
 // isName is a custom validator for name.
 func isName(fl validator.FieldLevel) bool {
-	pattern := `^[a-z][a-z0-9\-\._]*[a-z0-9]$`
+	pattern := `^[a-z0-9][a-z0-9\-\._]*[a-z0-9]$`
 	regex := regexp.MustCompile(pattern)
 	return regex.MatchString(fl.Field().String())
 }
