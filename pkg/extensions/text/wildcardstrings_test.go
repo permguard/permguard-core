@@ -211,31 +211,31 @@ func TestWildcardStringCompare(t *testing.T) {
 	}
 	{
 		pattern := "hr-*/*"
-		value := "hr-app/Create*"
+		value := "hr-zone/Create*"
 		assert.False(WildcardString(pattern).WildcardEqual(value), "wrong result\ngot: %sdon't want: %s", spew.Sdump(pattern), spew.Sdump(value))
 		assert.True(WildcardString(pattern).WildcardInclude(value), "wrong result\ngot: %sdon'tshouldn't be greather then: %s", spew.Sdump(value), spew.Sdump(pattern))
 	}
 	{
-		pattern := "hr-app/Create*"
+		pattern := "hr-zone/Create*"
 		value := "hr-*/*"
 		assert.False(WildcardString(pattern).WildcardEqual(value), "wrong result\ngot: %sdon't want: %s", spew.Sdump(pattern), spew.Sdump(value))
 		assert.False(WildcardString(pattern).WildcardInclude(value), "wrong result\ngot: %sdon'tshouldn't be greather then: %s", spew.Sdump(value), spew.Sdump(pattern))
 	}
 	{
 		pattern := "hr-*/*"
-		value := "hr-app/*Create*"
+		value := "hr-zone/*Create*"
 		assert.False(WildcardString(pattern).WildcardEqual(value), "wrong result\ngot: %sdon't want: %s", spew.Sdump(pattern), spew.Sdump(value))
 		assert.True(WildcardString(pattern).WildcardInclude(value), "wrong result\ngot: %sdon'tshouldn't be greather then: %s", spew.Sdump(value), spew.Sdump(pattern))
 	}
 	{
-		pattern := "hr-app/*Create*"
+		pattern := "hr-zone/*Create*"
 		value := "hr-*/*"
 		assert.False(WildcardString(pattern).WildcardEqual(value), "wrong result\ngot: %sdon't want: %s", spew.Sdump(pattern), spew.Sdump(value))
 		assert.False(WildcardString(pattern).WildcardInclude(value), "wrong result\ngot: %sdon'tshouldn't be greather then: %s", spew.Sdump(value), spew.Sdump(pattern))
 	}
 	{
-		pattern := "hr-app/*Create*"
-		value := "hr-app/****Create*"
+		pattern := "hr-zone/*Create*"
+		value := "hr-zone/****Create*"
 		assert.False(WildcardString(pattern).WildcardEqual(value), "wrong result\ngot: %sdon't want: %s", spew.Sdump(pattern), spew.Sdump(value))
 		assert.False(WildcardString(pattern).WildcardInclude(value), "wrong result\ngot: %sdon'tshouldn't be greather then: %s", spew.Sdump(value), spew.Sdump(pattern))
 		assert.True(WildcardString(pattern).wildcardMatch(value, false), "wrong result\ngot: %sshould match %s", spew.Sdump(value), spew.Sdump(pattern))
@@ -249,16 +249,16 @@ func TestWildcardStringComparation(t *testing.T) {
 	{
 		inclusions := [][]string{
 			{
-				"hr-app:time-management:data-entry:581616507495:person/bc182146-*-4fde-99aa-b2d4d08bc1e2:person:ReadTimesheet",
-				"hr-app:time-management:data-entry:581616507495:person/bc182146-1598-4fde-99aa-b2d4d08bc1e2:person:ReadTimesheet",
+				"hr-zone:time-management:data-entry:581616507495:person/bc182146-*-4fde-99aa-b2d4d08bc1e2:person:ReadTimesheet",
+				"hr-zone:time-management:data-entry:581616507495:person/bc182146-1598-4fde-99aa-b2d4d08bc1e2:person:ReadTimesheet",
 			},
 			{
-				"hr-app:time-management:data-entry:*:person/*99aa-b2d4d08bc1e2:person:ReadTimesheet",
-				"hr-app:time-management:data-entry:581616507495:person/bc182146-*-*-99aa-b2d4d08bc1e2:person:ReadTimesheet",
+				"hr-zone:time-management:data-entry:*:person/*99aa-b2d4d08bc1e2:person:ReadTimesheet",
+				"hr-zone:time-management:data-entry:581616507495:person/bc182146-*-*-99aa-b2d4d08bc1e2:person:ReadTimesheet",
 			},
 			{
-				"hr-app:time-*:*:581616507495:person/*:person:ReadTimesheet",
-				"hr-app:time-management:data-entry:581616507495:person/*:person:ReadTimesheet",
+				"hr-zone:time-*:*:581616507495:person/*:person:ReadTimesheet",
+				"hr-zone:time-management:data-entry:581616507495:person/*:person:ReadTimesheet",
 			},
 		}
 		for _, inclusion := range inclusions {
