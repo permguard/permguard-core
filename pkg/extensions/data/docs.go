@@ -14,5 +14,5 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-// Package files implements the host files.
-package files
+// Package crypto implements data functions.
+package data
