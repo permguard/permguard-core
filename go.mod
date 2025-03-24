@@ -1,4 +1,4 @@
-module github.com/permguard/permguard-core
+module github.com/permguard/permguard-common
 
 go 1.23.5
 
